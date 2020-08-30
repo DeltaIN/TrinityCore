@@ -1,9 +1,6 @@
 #include <ScriptPCH.h>
 #include <Unit.h>
 #include <Player.h>
-#include <ChatCommand.h>
-#include <Chat.h>
-#include <RBAC.h>
 
 // METHODS
 // SCRIPT CLASSES
@@ -36,33 +33,9 @@ public:
 
 };
 
-class test_cmd_script : public CommandScript
-{
-public:
-    test_cmd_script() : CommandScript("test_cmd_script") {}
 
-    std::vector<ChatCommand> GetCommands() const override
-    {
-        static std::vector<ChatCommand> cmds =
-        {
-            {"test", rbac::RBAC_PERM_COMMAND_CHEAT, true, &HandleTestCommand, ""}, // name, perm, allow console, handler reference, help
-        };
-
-
-        return cmds;
-    }
-
-    static bool HandleTestCommand(ChatHandler* handler, char const* args)
-    {
-        Player* trg;
-        handler->extractPlayerTarget((char*)args, &trg);
-        trg->Kill(trg, trg, false);
-        return true;
-    }
-};
 
 void AddSC_custom_ply_scripts()
 {
     new first_join_script;
-    new test_cmd_script;
 }

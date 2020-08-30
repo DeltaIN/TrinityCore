@@ -25,6 +25,7 @@ void AddSC_instance_pos();
 void AddSC_boss_herald_destr();
 void AddSC_itemset_battlelord_script();
 void AddSC_custom_ply_scripts();
+void AddSC_custom_command_scripts();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -40,4 +41,5 @@ void AddCustomScripts()
     AddSC_itemset_battlelord_script();
     AddSC_boss_herald_destr();
     AddSC_custom_ply_scripts();
+    AddSC_custom_command_scripts();
 }
