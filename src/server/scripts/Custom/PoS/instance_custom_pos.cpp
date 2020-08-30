@@ -217,7 +217,7 @@ public:
             if (!UpdateVictim())
                 return;
 
-
+            //test
             // Hellfire highest priority
             if (me->GetCurrentSpellCastTime(70283) > 0)
                 return;
