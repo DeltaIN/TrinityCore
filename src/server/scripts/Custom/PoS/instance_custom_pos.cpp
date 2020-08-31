@@ -112,6 +112,8 @@ public:
         {
             me->ClearUnitState(UnitState::UNIT_STATE_UNATTACKABLE);
 
+            me->RemoveAura(58808);
+
             summon_timer = 21000;
             ms_timer = 18000;
             bonestorm_timer = 15500;
