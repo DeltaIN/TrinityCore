@@ -5,11 +5,15 @@
 class instance_custom_pos : public InstanceMapScript
 {
 public:
-    instance_custom_pos() : InstanceMapScript("instance_custom_pos", 602) {}
+    instance_custom_pos() : InstanceMapScript("instance_custom_pos", 658) {}
 
     struct instance_custom_pos_iScript : public InstanceScript
     {
-        instance_custom_pos_iScript(InstanceMap* mp) : InstanceScript(mp) {}
+        InstanceMap* imap_ref;
+
+        instance_custom_pos_iScript(InstanceMap* mp) : InstanceScript(mp) {
+            imap_ref = mp;
+        }
 
         int numplayers = 0;
         std::vector<Creature*> mobs;
@@ -43,21 +47,14 @@ public:
             }
         }
 
-        void OnPlayerEnter(Player* pl) override
-        {
-            numplayers += 1;
-        }
-
-        void OnPlayerLeave(Player* pl) override
-        {
-            numplayers -= 1;
-        }
 
         void Update(const uint32 diff) override
         {
             // add diff timer?
             if (check_timer <= diff)
             {
+                numplayers = imap_ref->GetPlayers().getSize();
+
                 for (Creature* crt : mobs)
                 {
                     uint32 base_max_hp = mxhp.at(crt);
@@ -103,6 +100,7 @@ public:
 
         uint32 summon_timer = 0;
         uint32 ms_timer = 0;
+       
         uint32 bonestorm_timer = 0;
         bool bladestorm = false;
 
@@ -111,7 +109,6 @@ public:
         void Reset() override
         {
             me->ClearUnitState(UnitState::UNIT_STATE_UNATTACKABLE);
-
             me->RemoveAura(58808);
 
             summon_timer = 21000;
@@ -136,10 +133,13 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (me->GetHealth() <= 5 && !special_triggered_event)
+            if (me->GetHealthPct() <= 5 && !special_triggered_event)
             {
                 special_triggered_event = true;
                 me->AddUnitState(UnitState::UNIT_STATE_UNATTACKABLE);
+                me->AddUnitState(UnitState::UNIT_STATE_NOT_MOVE);
+                me->AddUnitState(UnitState::UNIT_STATE_CANNOT_AUTOATTACK);
+                me->AddUnitState(UnitState::UNIT_STATE_CANNOT_TURN);
             }
 
 

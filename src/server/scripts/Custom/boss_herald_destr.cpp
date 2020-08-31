@@ -346,7 +346,7 @@ public:
 				else {
 					ctimer -= uiDiff;
 				}
-
+                
 				if (necroticTimer <= uiDiff)
 				{
 					if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT, 0))
