@@ -123,49 +123,46 @@ class item_battlelord_hands : public AuraScript
 };
 
 
+class item_conqueror_claymore_dummy : public AuraScript
+{
+    PrepareAuraScript(item_conqueror_claymore_dummy);
+
+    void HandleProc(AuraEffect const* aureff, ProcEventInfo& pinfo)
+    {
+        Unit* victim = pinfo.GetProcTarget();
+        uint32 standard_dmg_value = this->GetEffect(0)->GetAmount()*0.5 + GetCaster()->GetMaxHealth();
+
+        if (Aura* aur = victim->GetAura(900055, GetCaster()->GetGUID()))
+        {
+            this->GetEffect(0)->SetAmount(standard_dmg_value);
+        }
+        else {
+            this->GetEffect(0)->SetAmount(GetCaster()->GetMaxHealth());
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+
+    }
+};
+
 class item_conqueror_claymore : public AuraScript
 {
     PrepareAuraScript(item_conqueror_claymore);
 
+
+
     void handleCalcAmount(AuraEffect const* e, int32& a, bool& c)
     {
         GetAura()->SetCritChance(10.0F);
-        if (this->GetUnitOwner()->HasAura(900055, this->GetCaster()->GetGUID()))
-        {
-            Aura* aur = this->GetUnitOwner()->GetAura(900055, this->GetCaster()->GetGUID());
-            int32 oldamount = aur->GetEffect(0)->GetAmount();
-            int32 oldduration = aur->GetDuration();
-
-            a = oldamount + GetUnitOwner()->GetTotalAttackPowerValue(WeaponAttackType::BASE_ATTACK) * 0.875;
-        }
-        else {
-            a = GetUnitOwner()->GetTotalAttackPowerValue(WeaponAttackType::BASE_ATTACK) * 0.875;
-        }
-        
-    }
-
-    void handleCalcDur(AuraEffect const* e, SpellModifier*& spellmod)
-    {
-        spellmod->op = SpellModOp::SPELLMOD_DURATION;
-        spellmod->type = SpellModType::SPELLMOD_FLAT;
-        spellmod->value = 0;
-        
-        
-
-        if (Aura *aur = this->GetUnitOwner()->GetAura(900055, this->GetCaster()->GetGUID()))
-        {
-            int32 old_spell_dur = aur->GetDuration(); // existing aura
-
-            spellmod->value = 0-(aur->GetMaxDuration()-old_spell_dur);
-
-        }
-
+        a = GetUnitOwner()->GetAura(900054, GetCaster()->GetGUID())->GetEffect(0)->GetAmount();
     }
 
     void Register() override
     {
         DoEffectCalcAmount += AuraEffectCalcAmountFn(item_conqueror_claymore::handleCalcAmount, EFFECT_0, SPELL_AURA_ANY);
-        DoEffectCalcSpellMod += AuraEffectCalcSpellModFn(item_conqueror_claymore::handleCalcDur, EFFECT_0, SPELL_AURA_ANY);
     }
 };
 
@@ -179,4 +176,5 @@ void AddSC_itemset_battlelord_script()
 	RegisterAuraScript(item_battlelord_hands_dummy);
     RegisterAuraScript(item_battlelord_hands);
     RegisterAuraScript(item_conqueror_claymore);
+    RegisterAuraScript(item_conqueror_claymore_dummy);
 }
