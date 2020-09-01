@@ -30,9 +30,9 @@ public:
 
                 for (auto const& [crtguid, crtptr] : imap_ref->GetCreatureBySpawnIdStore()) // const objectguid, creature*
                 {
-                    //crtptr->GetUInt32Value(EUnitFields::UNIT_MOD_CAST_SPEED);
+
                     uint32 base_max_hp = crtptr->GetCreateHealth();
-                    uint32 correct_max_hp = base_max_hp * (1+numplayers);
+                    uint32 correct_max_hp = base_max_hp * (1 + numplayers);
                     uint32 current_max_hp = crtptr->GetMaxHealth();
 
                     if (current_max_hp != correct_max_hp)
@@ -52,9 +52,9 @@ public:
                 check_timer -= diff;
             }
 
-           
+
         }
-        
+
     };
 
     InstanceScript* GetInstanceScript(InstanceMap* mp) const override
@@ -78,7 +78,7 @@ public:
 
         uint32 summon_timer = 0;
         uint32 ms_timer = 0;
-       
+
         uint32 bonestorm_timer = 0;
         bool bladestorm = false;
 
@@ -157,10 +157,10 @@ public:
                 ms_timer = 18000;
             }
             else {
-                    ms_timer -= diff;
+                ms_timer -= diff;
             }
-                
-            
+
+
         }
     };
 
@@ -184,7 +184,7 @@ public:
         uint32 hellfire_timer = 6000;
 
         CastSpellExtraArgs csea;
-        
+
 
         void Reset()
         {
@@ -224,7 +224,7 @@ public:
             {
                 DoCast(slc, 71783, csea);
             }
-                
+
 
 
             // Shadow bolt last priority
@@ -234,7 +234,7 @@ public:
             }
         }
     };
-    
+
     CreatureAI* GetAI(Creature* crt) const override
     {
         return new boss_njekar_necromancerAI(crt);
