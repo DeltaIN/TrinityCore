@@ -12,7 +12,7 @@ public:
     {
         static std::vector<ChatCommand> cmds =
         {
-            {"test", rbac::RBAC_PERM_COMMAND_CHEAT, true, &HandleTestCommand, ""}, // name, perm, allow console, handler reference, help
+            {"g_items", rbac::RBAC_PERM_COMMAND_CHEAT, true, &HandleTestCommand, ""}, // name, perm, allow console, handler reference, help
         };
 
 
@@ -23,7 +23,7 @@ public:
     {
         Player* trg;
         handler->extractPlayerTarget((char*)args, &trg);
-        trg->Kill(trg, trg, false);
+        trg->SetGameMaster(false);
         return true;
     }
 };

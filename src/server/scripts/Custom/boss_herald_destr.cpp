@@ -155,6 +155,12 @@ public:
 		uint32 ctimer = 12000;
 		uint32 bctimer = 12000;
 
+        uint32 jumptimer = 4000;
+        uint32 _jumptimer = 4000;
+
+        uint32 bjumptimer = 8000;
+        uint32 _bjumptimer = 8000;
+
 		uint32 decompTimer = 5000;
 		uint32 _decompTimer = 5000;
 
@@ -237,8 +243,9 @@ public:
 								//me->AddAura(boss_spells::SPELL_BLAZING_DECOMPOSITION, u);
 								CastSpellExtraArgs carg;
 								carg.SetTriggerFlags(TriggerCastFlags::TRIGGERED_FULL_MASK);
+                                carg.AddSpellBP0(urand(40000, 100000));
 								me->CastSpell(u, boss_spells::SPELL_BLAZING_DECOMPOSITION, carg);
-
+                                
 							}
 
 
@@ -249,6 +256,8 @@ public:
 						intermission_dot_timer -= uiDiff;
 					}
 				}
+
+                
 
 				if (checktimer <= uiDiff)
 				{
@@ -314,6 +323,24 @@ public:
 					phase = 1;
 					return;
 				}
+
+                if (jumptimer <= uiDiff)
+                {
+                    me->JumpTo(5.0F, 3.0F, true, Position(16226, 16262, 25.3, 0.1));
+                    jumptimer = _jumptimer;
+                }
+                else {
+                    jumptimer -= uiDiff;
+                }
+
+                if (bjumptimer <= uiDiff)
+                {
+                    me->JumpTo(15.0F, 23.0F, true, me->GetVictim()->GetPositionWithOffset(Position(0.0F, 17.0F)));
+                    bjumptimer = _bjumptimer;
+                }
+                else {
+                    bjumptimer -= uiDiff;
+                }
 
 				if (decompTimer <= uiDiff)
 				{

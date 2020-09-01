@@ -23,6 +23,8 @@ public:
 
         void OnCreatureCreate(Creature* crt) override
         {
+            
+
             mobs.push_back(crt);
             mxhp.insert(mxhp.end(), { crt, crt->GetMaxHealth()});
             crt->SetRespawnTime(2^30);
@@ -55,18 +57,40 @@ public:
             {
                 numplayers = imap_ref->GetPlayers().getSize();
 
+                for (auto const& [crtguid, crtptr] : imap_ref->GetCreatureBySpawnIdStore()) // const objectguid, creature*
+                {
+                    uint32 base_max_hp = mxhp.at(crtptr);
+                    uint32 correct_max_hp = base_max_hp * (1+numplayers);
+                    uint32 current_max_hp = crtptr->GetMaxHealth();
+
+                    if (current_max_hp != correct_max_hp)
+                    {
+                        uint32 healthperc = crtptr->GetHealthPct();
+
+                        crtptr->SetMaxHealth(correct_max_hp);
+                        crtptr->SetHealth((healthperc / 100) * crtptr->GetMaxHealth());
+                        current_max_hp = correct_max_hp;
+                    }
+                }
+
+                
+                /*
                 for (Creature* crt : mobs)
                 {
                     uint32 base_max_hp = mxhp.at(crt);
-                    uint32 correct_max_hp = base_max_hp * (1 + (numplayers * 0.5));
+                    uint32 correct_max_hp = base_max_hp * (1 + (numplayers * 5));
                     uint32 current_max_hp = crt->GetMaxHealth();
 
                     if (current_max_hp != correct_max_hp)
                     {
+                        uint32 healthperc = crt->GetHealthPct();
+
                         crt->SetMaxHealth(correct_max_hp);
+                        crt->SetHealth((healthperc / 100)*crt->GetMaxHealth());
                         current_max_hp = correct_max_hp;
                     }
                 }
+                */
 
                 check_timer = _check_timer;
             }
