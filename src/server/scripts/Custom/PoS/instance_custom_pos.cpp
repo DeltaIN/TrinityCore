@@ -17,49 +17,21 @@ public:
 
         int numplayers = 0;
         std::vector<Creature*> mobs;
-        std::map<Creature*, uint32> mxhp;
         uint32 check_timer = 7000;
         uint32 _check_timer = 7000;
-
-        void OnCreatureCreate(Creature* crt) override
-        {
-            
-
-            mobs.push_back(crt);
-            mxhp.insert(mxhp.end(), { crt, crt->GetMaxHealth()});
-            crt->SetRespawnTime(2^30);
-        }
-
-        void OnCreatureRemove(Creature* crt) override
-        {
-            for (size_t i = 0; i < mobs.size(); i++)
-            {
-                if (mobs.at(i) == crt)
-                {
-                    mobs.erase(mobs.begin()+i);
-                }
-            }
-
-            for (auto const& [key, val] : mxhp)
-            {
-                if (key == crt)
-                {
-                    mxhp.erase(key);
-                }
-            }
-        }
 
 
         void Update(const uint32 diff) override
         {
-            // add diff timer?
             if (check_timer <= diff)
             {
                 numplayers = imap_ref->GetPlayers().getSize();
 
+
                 for (auto const& [crtguid, crtptr] : imap_ref->GetCreatureBySpawnIdStore()) // const objectguid, creature*
                 {
-                    uint32 base_max_hp = mxhp.at(crtptr);
+
+                    uint32 base_max_hp = crtptr->GetCreateHealth();
                     uint32 correct_max_hp = base_max_hp * (1+numplayers);
                     uint32 current_max_hp = crtptr->GetMaxHealth();
 
@@ -73,24 +45,6 @@ public:
                     }
                 }
 
-                
-                /*
-                for (Creature* crt : mobs)
-                {
-                    uint32 base_max_hp = mxhp.at(crt);
-                    uint32 correct_max_hp = base_max_hp * (1 + (numplayers * 5));
-                    uint32 current_max_hp = crt->GetMaxHealth();
-
-                    if (current_max_hp != correct_max_hp)
-                    {
-                        uint32 healthperc = crt->GetHealthPct();
-
-                        crt->SetMaxHealth(correct_max_hp);
-                        crt->SetHealth((healthperc / 100)*crt->GetMaxHealth());
-                        current_max_hp = correct_max_hp;
-                    }
-                }
-                */
 
                 check_timer = _check_timer;
             }

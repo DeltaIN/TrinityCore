@@ -36,7 +36,7 @@ void AddCustomScripts()
     AddSC_spell_items();
     AddSC_jhuun_intermission_add();
     AddSC_boss_manifest();
-    //AddSC_instance_pos();
+    AddSC_instance_pos();
 
     AddSC_itemset_battlelord_script();
     AddSC_boss_herald_destr();
