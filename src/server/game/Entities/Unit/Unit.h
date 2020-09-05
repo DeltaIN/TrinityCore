@@ -767,11 +767,12 @@ class TC_GAME_API Unit : public WorldObject
         void PushAI(UnitAI* newAI);
         bool PopAI();
     protected:
-        void SetAI(UnitAI* newAI);
+        
         UnitAI* GetTopAI() const { return i_AIs.empty() ? nullptr : i_AIs.top().get(); }
-        void RefreshAI();
+        
     public:
-
+        void SetAI(UnitAI* newAI);
+        void RefreshAI();
         void AddToWorld() override;
         void RemoveFromWorld() override;
 

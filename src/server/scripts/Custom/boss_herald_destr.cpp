@@ -206,6 +206,8 @@ public:
 			me->SetHealth(me->GetMaxHealth());
 		}
 
+
+
 		void TriggerPhaseTwo()
 		{
 			phase = 2;
