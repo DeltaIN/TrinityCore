@@ -15,8 +15,6 @@ public:
             imap_ref = mp;
         }
 
-        int numplayers = 0;
-        std::vector<Creature*> mobs;
         uint32 check_timer = 7000;
         uint32 _check_timer = 7000;
 
@@ -25,14 +23,11 @@ public:
         {
             if (check_timer <= diff)
             {
-                numplayers = imap_ref->GetPlayers().getSize();
-
-
                 for (auto const& [crtguid, crtptr] : imap_ref->GetCreatureBySpawnIdStore()) // const objectguid, creature*
                 {
 
                     uint32 base_max_hp = crtptr->GetCreateHealth();
-                    uint32 correct_max_hp = base_max_hp * (1 + numplayers);
+                    uint32 correct_max_hp = base_max_hp * (1 + imap_ref->GetPlayers().getSize());
                     uint32 current_max_hp = crtptr->GetMaxHealth();
 
                     if (current_max_hp != correct_max_hp)

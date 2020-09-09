@@ -47,21 +47,12 @@ class spell_magmatic_eruption : public SpellScript
 			cunit->RemoveAura(900043);
 		}
 
-		for (int i = 0; i < 90; i++)
+		if (hunit != SpellScript::GetCaster())
 		{
-
-			if (hunit != SpellScript::GetCaster())
-			{
-				//CastSpellExtraArgs carg;
-				//carg.SetTriggerFlags(TriggerCastFlags::TRIGGERED_FULL_MASK);
-				//cunit->CastSpell(hunit, boss_spells::SPELL_BLAZING_DECOMPOSITION, carg);
-				Aura* dec = cunit->AddAura(boss_spells::SPELL_BLAZING_DECOMPOSITION, hunit);
-				dec->SetStackAmount(100);
-
-				//cunit->AddAura(boss_spells::SPELL_BLAZING_DECOMPOSITION, hunit);
-			}
-			
+			Aura* dec = cunit->AddAura(boss_spells::SPELL_BLAZING_DECOMPOSITION, hunit);
+			dec->SetStackAmount(200);
 		}
+			
 	}
 
 	void Register() override

@@ -4,6 +4,8 @@
 #include <Player.h>
 #include <thread>
 #include <Item.h>
+#include <Pet.h>
+#include <PetAI.h>
 
 
 void battlelord_grow_heal(Aura* aur)
@@ -123,6 +125,93 @@ class item_battlelord_hands : public AuraScript
 	}
 };
 
+class creature_battlelord_pet : public CreatureScript
+{
+public:
+    creature_battlelord_pet() : CreatureScript("creature_battlelord_pet") {}
+
+    struct creature_battlelord_petAI : public PetAI
+    {
+        Player* owner;
+
+        enum pet_spells
+        {
+            SPELL_HEAL_OWNER = 0,
+            SPELL_DAMAGE_VICTIM = 1
+        };
+
+        std::vector<std::pair<pet_spells, uint32>> spell_timers;
+
+        creature_battlelord_petAI(Creature* crt) : PetAI(crt) {
+            if (Player* wne = me->GetOwner()->ToPlayer())
+                owner = wne;
+
+            spell_timers.push_back(std::make_pair(SPELL_DAMAGE_VICTIM, 4000));
+        }
+
+        
+
+        void OwnerAttacked(Unit* who) override
+        {
+            AttackStart(who);
+        }
+
+
+        void OwnerAttackedBy(Unit* who) override
+        {
+            if (!me->GetReactState() == ReactStates::REACT_DEFENSIVE)
+                AttackStart(who);
+        }
+
+        void UpdateAI(uint32 diff) override
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (!owner)
+                return;
+
+            if (!me->GetCurrentSpell(CURRENT_GENERIC_SPELL) && owner->GetHealthPct() < 50)
+                me->CastSpell(owner, SPELL_HEAL_OWNER);
+
+            if (spell_timers[SPELL_DAMAGE_VICTIM].second <= diff && !me->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+            {
+                me->CastSpell(me->GetVictim(), SPELL_DAMAGE_VICTIM);
+                spell_timers[SPELL_DAMAGE_VICTIM].second = 4000;
+            }
+            else {
+                spell_timers[SPELL_DAMAGE_VICTIM].second -= diff;
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* crt) const override
+    {
+        return new creature_battlelord_petAI(crt);
+    }
+};
+
+class item_battlelord_undefined : public AuraScript
+{
+    PrepareAuraScript(item_battlelord_undefined);
+
+    void effapply(const AuraEffect* aureff, AuraEffectHandleModes mode)
+    {
+        if (Player* owner = GetAura()->GetUnitOwner()->ToPlayer())
+        {
+            if (owner->GetPet())
+                return;
+
+            Pet* pt = owner->SummonPet(99900, 0, 0, 0, 0, PetType::SUMMON_PET, 0, true);
+            pt->SetAI(new creature_battlelord_pet::creature_battlelord_petAI(pt));
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(effapply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_DEFAULT);
+    }
+};
 
 
 void AddSC_itemset_battlelord_script()

@@ -130,9 +130,9 @@ public:
         handler->extractPlayerTarget((char*)args, &trg);
         handler->extractQuotedArg((char*)args);
         trg->SetGameMaster(false);
-        Pet *plpet = trg->SummonPet(99999999, trg->GetPositionX(), trg->GetPositionY(), trg->GetPositionZ(), trg->GetOrientation(), PetType::MAX_PET_TYPE, 2500);
+        Pet *plpet = trg->SummonPet(0, trg->GetPositionX(), trg->GetPositionY(), trg->GetPositionZ(), trg->GetOrientation(), PetType::MAX_PET_TYPE, 2500);
         plpet->SetAI(new test_pet_script::test_pet_scriptAI(plpet));
-        
+       
 
         return true;
     }
