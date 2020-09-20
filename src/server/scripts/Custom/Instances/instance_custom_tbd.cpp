@@ -12,10 +12,12 @@ namespace custom_tbd_constants
     const uint32 map_id = 0;
     const std::string script_name = "instance_custom_tbd";
 
-    enum tbd_drekar_spells
+    enum eIDs
     {
         SPELL_BLEED_HIT = 900057,
-        SPELL_BLEED_HIT_DAMAGE = 900057
+        SPELL_BLEED_HIT_DAMAGE = 900057,
+
+        ENTRY_DREKAR_CREATURE = 400002
     };
 }
 
@@ -49,6 +51,21 @@ public:
     {
     public:
         boss_drekar_script(Creature* crt) : BossAI(crt, 0) {}
+
+        void Reset() override
+        {
+            if (Aura* aurcheck = me->GetAura(custom_tbd_constants::SPELL_BLEED_HIT, me->GetGUID()))
+                me->RemoveAura(aurcheck);
+
+            
+        }
+
+        void JustEngagedWith(Unit* crt) override
+        {
+            me->AddAura(custom_tbd_constants::SPELL_BLEED_HIT, me);
+
+            DoZoneInCombat();
+        }
     };
 
     CreatureAI* GetAI(Creature* crt) const override
@@ -57,7 +74,7 @@ public:
     }
 };
 
-// ----- SPELL SCRIPTS -----
+// ----- SPELL/AURA SCRIPTS -----
 class boss_drekar_aura_bleedHit : public AuraScript
 {
     PrepareAuraScript(boss_drekar_aura_bleedHit);
@@ -85,13 +102,13 @@ class boss_drekar_aura_bleedHit : public AuraScript
             int32 cur_duration = exist_aura->GetDuration();
             int32 cur_max_duration = exist_aura->GetMaxDuration();
 
-            exist_aura->SetMaxDuration(cur_max_duration * 2);
+            exist_aura->SetMaxDuration(cur_max_duration * 1.5);
             exist_aura->SetDuration(exist_aura->GetMaxDuration());
             exist_aura->GetEffect(0)->SetAmount(cur_amount + (damage_amount * 2) );
 
             if (Player* ply = proctarget->ToPlayer())
             {
-                ply->SendPlaySpellImpact(ply->GetGUID(), 772);
+                ply->SendPlaySpellImpact(ply->GetGUID(), 19280);
             }
         }
         else { // apply new aura
@@ -111,4 +128,5 @@ void AddSC_instance_custom_tbd()
 {
     new instance_custom_tbd;
     new boss_drekar;
+    RegisterAuraScript(boss_drekar_aura_bleedHit);
 }
