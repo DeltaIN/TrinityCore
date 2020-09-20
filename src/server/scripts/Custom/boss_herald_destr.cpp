@@ -39,7 +39,7 @@ class spell_magmatic_eruption : public SpellScript
 	{
 		Unit* hunit = SpellScript::GetHitUnit();
 		Unit* cunit = SpellScript::GetCaster();
-
+    
 
 		// Remove flame shield
 		if (cunit->HasAura(900043))
@@ -121,6 +121,19 @@ public:
 };
 
 
+void HOD_DMGMOD_THR(Creature* crt, float& mod, int delayMS, float factor)
+{
+    while (true)
+    {
+        mod *= factor;
+        std::this_thread::sleep_for(std::chrono::milliseconds(delayMS));
+        if (!crt->IsInCombat())
+        {
+            return;
+        }
+    }
+}
+
 class herald_of_destruction : public CreatureScript
 {
 public:
@@ -134,27 +147,46 @@ public:
 
 		uint32 phase = 0;
 
+        // Unused
 		uint32 base_display_id = 18036;
 		uint32 ice_display_id = 21145;
 
+        // Transition phase blazing decomposition timer
 		uint32 intermission_dot_timer = 3000;
 		uint32 _intermission_dot_timer = 3000;
 
+        // Transition phase update timer
 		uint32 checktimer = 500;
 		uint32 _checktimer = 500;
 
+        // Shadow Cleave timer
 		uint32 ctimer = 12000;
 		uint32 bctimer = 12000;
 
-        uint32 jumptimer = 4000;
-        uint32 _jumptimer = 4000;
 
-        uint32 bjumptimer = 8000;
-        uint32 _bjumptimer = 8000;
+        std::thread* mdfr_thread;
+        float damage_modifier = 1.5F;
+        // Destroy thread when leaving combat / entering evade
+        void JustExitedCombat() override
+        {
+            if (mdfr_thread)
+            {
+                mdfr_thread->join();
+                mdfr_thread->detach();
+            }
+        }
+        // Create thread when entering combat
+        void JustEnteredCombat(Unit* who) override
+        {
+            if (!mdfr_thread)
+                mdfr_thread = new std::thread(HOD_DMGMOD_THR, &damage_modifier, 400, 1.8);
+        }
 
+        // Blazing Decomposition periodic dot
 		uint32 decompTimer = 5000;
 		uint32 _decompTimer = 5000;
 
+        // Necrotic Strike (TO BE REPLACED)
 		uint32 necroticTimer = 9000;
 		uint32 _necroticTimer = 9000;
 
@@ -162,6 +194,7 @@ public:
 		uint32 summonTimer = 26000;
 		uint32 _summonTimer = 26000;
 
+        
 
 		void Reset()
 		{
@@ -236,7 +269,7 @@ public:
 								//me->AddAura(boss_spells::SPELL_BLAZING_DECOMPOSITION, u);
 								CastSpellExtraArgs carg;
 								carg.SetTriggerFlags(TriggerCastFlags::TRIGGERED_FULL_MASK);
-                                carg.AddSpellBP0(urand(40000, 100000));
+                                carg.AddSpellBP0(damage_modifier * urand(40000, 100000));
 								me->CastSpell(u, boss_spells::SPELL_BLAZING_DECOMPOSITION, carg);
                                 
 							}
@@ -317,31 +350,13 @@ public:
 					return;
 				}
 
-                if (jumptimer <= uiDiff)
-                {
-                    me->JumpTo(5.0F, 3.0F, true, Position(16226, 16262, 25.3, 0.1));
-                    jumptimer = _jumptimer;
-                }
-                else {
-                    jumptimer -= uiDiff;
-                }
-
-                if (bjumptimer <= uiDiff)
-                {
-                    me->JumpTo(15.0F, 23.0F, true, me->GetVictim()->GetPositionWithOffset(Position(0.0F, 17.0F)));
-                    bjumptimer = _bjumptimer;
-                }
-                else {
-                    bjumptimer -= uiDiff;
-                }
-
 				if (decompTimer <= uiDiff)
 				{
 					for (Unit* u : GetNearbyPlayers(this, 40))
 					{
 						//me->AddAura(900042, u);
 						CastSpellExtraArgs carg;
-						carg.AddSpellBP0(irand(11531, 19051));
+						carg.AddSpellBP0(damage_modifier * irand(11531, 19051));
 						carg.SetTriggerFlags(TriggerCastFlags::TRIGGERED_FULL_MASK);
 						me->CastSpell(u, boss_spells::SPELL_BLAZING_DECOMPOSITION, carg);
 
@@ -372,8 +387,8 @@ public:
 					if (Unit* target = SelectTarget(SELECT_TARGET_MAXTHREAT, 0))
 					{
 						CastSpellExtraArgs earg = new CastSpellExtraArgs();
-						earg.AddSpellMod(SpellValueMod::SPELLVALUE_BASE_POINT0, 1235);
-						earg.AddSpellMod(SpellValueMod::SPELLVALUE_BASE_POINT1, 691);
+						earg.AddSpellMod(SpellValueMod::SPELLVALUE_BASE_POINT0, damage_modifier * 1235);
+						earg.AddSpellMod(SpellValueMod::SPELLVALUE_BASE_POINT1, damage_modifier * 691);
 
 						DoCast(target, SPELL_NECROTIC_STRIKE, earg);
 						necroticTimer = _necroticTimer;

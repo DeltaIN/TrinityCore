@@ -82,6 +82,10 @@ public:
         void Reset() override
         {
             me->ClearUnitState(UnitState::UNIT_STATE_UNATTACKABLE);
+            me->ClearUnitState(UnitState::UNIT_STATE_NOT_MOVE);
+            me->ClearUnitState(UnitState::UNIT_STATE_CANNOT_AUTOATTACK);
+            me->ClearUnitState(UnitState::UNIT_STATE_CANNOT_TURN);
+            
             me->RemoveAura(58808);
 
             summon_timer = 21000;

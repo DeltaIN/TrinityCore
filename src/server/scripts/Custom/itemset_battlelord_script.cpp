@@ -7,7 +7,7 @@
 #include <Pet.h>
 #include <PetAI.h>
 
-
+/* See item_battlelord_helmet::HandlePeriodic
 void battlelord_grow_heal(Aura* aur)
 {
     while (true)
@@ -26,29 +26,38 @@ void battlelord_grow_heal(Aura* aur)
 
     return;
 }
+*/
 
 class item_battlelord_helmet : public AuraScript
 {
 	PrepareAuraScript(item_battlelord_helmet);
 
-    std::thread* heal_thread;
+    //std::thread* heal_thread;
 
     void handleRemove(AuraEffect const* aureff, AuraEffectHandleModes mode)
     {
-        heal_thread->join();
-        heal_thread->detach();
+        //heal_thread->join();
+        //heal_thread->detach();
+    }
+
+    void HandlePeriodic(AuraEffect* aureff)
+    {
+        int32 current_amount = aureff->GetAmount();
+        int32 new_amount = current_amount * frand(0.7, 1.7);
+        aureff->SetAmount(new_amount);
     }
 
 	void handleCalc(AuraEffect const* aureff, int32& amount, bool& c)
 	{
-		AuraScript::GetAura()->SetCritChance(0);
+		AuraScript::GetAura()->SetCritChance(7.0F);
 		uint32 plyhp = GetUnitOwner()->GetMaxHealth();
 
         uint32 desr = plyhp * 0.04;
 		amount = (desr / 10);
 
+
         
-        heal_thread = new std::thread(battlelord_grow_heal, GetAura());
+        //heal_thread = new std::thread(battlelord_grow_heal, GetAura());
 		
 	}
 
@@ -57,6 +66,7 @@ class item_battlelord_helmet : public AuraScript
 	{
         AfterEffectRemove += AuraEffectRemoveFn(item_battlelord_helmet::handleRemove, EFFECT_0, SPELL_AURA_ANY, AuraEffectHandleModes::AURA_EFFECT_HANDLE_DEFAULT);
 		DoEffectCalcAmount += AuraEffectCalcAmountFn(item_battlelord_helmet::handleCalc, EFFECT_0, SPELL_AURA_ANY);
+        OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(item_battlelord_helmet::HandlePeriodic, EFFECT_0, SPELL_AURA_ANY);
 	}
 };
 
@@ -125,91 +135,48 @@ class item_battlelord_hands : public AuraScript
 	}
 };
 
-class creature_battlelord_pet : public CreatureScript
+class item_battlelord_legs_pet : public CreatureScript
 {
 public:
-    creature_battlelord_pet() : CreatureScript("creature_battlelord_pet") {}
-
-    struct creature_battlelord_petAI : public PetAI
+    item_battlelord_legs_pet() : CreatureScript("item_battlelord_legs_pet") {}
+    struct item_battlelord_legs_petAI : public PetAI
     {
-        Player* owner;
+        item_battlelord_legs_petAI(Creature* crt) : PetAI(crt) {}
 
-        enum pet_spells
+        uint32 dmgtimer;
+
+        void Reset() override
         {
-            SPELL_HEAL_OWNER = 0,
-            SPELL_DAMAGE_VICTIM = 1
-        };
-
-        std::vector<std::pair<pet_spells, uint32>> spell_timers;
-
-        creature_battlelord_petAI(Creature* crt) : PetAI(crt) {
-            if (Player* wne = me->GetOwner()->ToPlayer())
-                owner = wne;
-
-            spell_timers.push_back(std::make_pair(SPELL_DAMAGE_VICTIM, 4000));
-        }
-
-        
-
-        void OwnerAttacked(Unit* who) override
-        {
-            AttackStart(who);
-        }
-
-
-        void OwnerAttackedBy(Unit* who) override
-        {
-            if (!me->GetReactState() == ReactStates::REACT_DEFENSIVE)
-                AttackStart(who);
+            dmgtimer = 500;
         }
 
         void UpdateAI(uint32 diff) override
         {
-            if (!UpdateVictim())
-                return;
-
-            if (!owner)
-                return;
-
-            if (!me->GetCurrentSpell(CURRENT_GENERIC_SPELL) && owner->GetHealthPct() < 50)
-                me->CastSpell(owner, SPELL_HEAL_OWNER);
-
-            if (spell_timers[SPELL_DAMAGE_VICTIM].second <= diff && !me->GetCurrentSpell(CURRENT_GENERIC_SPELL))
-            {
-                me->CastSpell(me->GetVictim(), SPELL_DAMAGE_VICTIM);
-                spell_timers[SPELL_DAMAGE_VICTIM].second = 4000;
-            }
-            else {
-                spell_timers[SPELL_DAMAGE_VICTIM].second -= diff;
-            }
+            me->DealDamage(me, me->GetVictim(), 40000, (const CleanDamage*)nullptr, DamageEffectType::DOT);
         }
     };
 
-    CreatureAI* GetAI(Creature* crt) const override
+    CreatureAI* GetAI(Creature* creature) const override
     {
-        return new creature_battlelord_petAI(crt);
+        return new item_battlelord_legs_petAI(creature);
     }
 };
 
-class item_battlelord_undefined : public AuraScript
+class item_battlelord_legs : public AuraScript
 {
-    PrepareAuraScript(item_battlelord_undefined);
+    PrepareAuraScript(item_battlelord_legs);
 
-    void effapply(const AuraEffect* aureff, AuraEffectHandleModes mode)
+    void onProc(ProcEventInfo& pinfo)
     {
-        if (Player* owner = GetAura()->GetUnitOwner()->ToPlayer())
+        if (Player* ply = AuraScript::GetUnitOwner()->ToPlayer())
         {
-            if (owner->GetPet())
-                return;
-
-            Pet* pt = owner->SummonPet(99900, 0, 0, 0, 0, PetType::SUMMON_PET, 0, true);
-            pt->SetAI(new creature_battlelord_pet::creature_battlelord_petAI(pt));
+            Pet* plypet = ply->SummonPet(0, ply->GetPositionX(), ply->GetPositionY(), ply->GetPositionZ(), ply->GetOrientation(), PetType::SUMMON_PET, 4000);
         }
     }
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(effapply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_DEFAULT);
+        OnProc += AuraProcFn(onProc);
     }
 };
 
