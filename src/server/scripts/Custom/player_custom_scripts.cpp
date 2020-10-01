@@ -32,11 +32,12 @@ public:
     void OnChat(Player* sender, uint32 type, uint32 lang, std::string& msg)
     {
         std::string sendername = sender->GetName();
+        std::string lwr = msg;
+        std::transform(lwr.begin(), lwr.end(), lwr.begin(), ::tolower);
+
         for (std::string blk : blockedmessages)
         {
-            std::string lwr = msg;
-            std::transform(lwr.begin(), lwr.end(), lwr.begin(), ::tolower);
-
+            
             if (lwr.compare(blk) != std::string::npos)
             {
                 msg = "";
