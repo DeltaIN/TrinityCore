@@ -135,6 +135,8 @@ class item_battlelord_hands : public AuraScript
 	}
 };
 
+/*
+
 class item_battlelord_legs_pet : public CreatureScript
 {
 public:
@@ -179,7 +181,77 @@ class item_battlelord_legs : public AuraScript
         OnProc += AuraProcFn(onProc);
     }
 };
+*/
 
+
+std::vector<Unit*> getuntcbPVP(Player* ply)
+{
+    std::vector<Unit*> fnl;
+
+    for (const std::pair<const ObjectGuid, CombatReference*> crefpair : ply->GetCombatManager().GetPvPCombatRefs())
+    {
+        if (crefpair.second->first->GetGUID() != ply->GetGUID())
+            fnl.push_back(crefpair.second->first);
+
+        if (crefpair.second->second->GetGUID() != ply->GetGUID())
+            fnl.push_back(crefpair.second->second);
+    }
+}
+
+std::vector<Unit*> GetUnitsInCombatWith(Player* ply, bool PVP)
+{
+    std::vector<Unit*> fnl;
+
+    if (PVP)
+    {
+        fnl = getuntcbPVP(ply);
+        return fnl;
+    }
+
+    for (const std::pair<const ObjectGuid, CombatReference*> crefpair : ply->GetCombatManager().GetPvECombatRefs())
+    {
+        if (crefpair.second->first->GetGUID() != ply->GetGUID())
+            fnl.push_back(crefpair.second->first);
+
+        if (crefpair.second->second->GetGUID() != ply->GetGUID())
+            fnl.push_back(crefpair.second->second);
+    }
+    return fnl;
+
+    
+}
+
+class item_battlelord_legs : public AuraScript
+{
+    PrepareAuraScript(item_battlelord_legs);
+
+    void HandleDummy(AuraEffect const* aureff, ProcEventInfo& pinfo)
+    {
+        PreventDefaultAction();
+
+        std::vector<uint32> DOTIDS = { 0, 4, 8, 12 }; // rend, ...
+
+        if (Player* ply = pinfo.GetActor()->ToPlayer())
+        {
+            for (Unit* unt : GetUnitsInCombatWith(ply, false))
+            {
+                for (uint32 cid : DOTIDS)
+                {
+                    if (AuraEffect* aureff = unt->GetAuraEffect(cid, 0, ply->GetGUID()))
+                    {
+                        aureff->SetAmount(aureff->GetAmount() * 1.2);
+                    }
+                }
+            }
+
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(HandleDummy, EFFECT_0, SPELL_AURA_PROC_TRIGGER_DAMAGE);
+    }
+};
 
 void AddSC_itemset_battlelord_script()
 {

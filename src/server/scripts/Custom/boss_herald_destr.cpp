@@ -164,22 +164,12 @@ public:
 		uint32 bctimer = 12000;
 
 
-        std::thread* mdfr_thread;
         float damage_modifier = 1.5F;
         // Destroy thread when leaving combat / entering evade
-        void JustExitedCombat() override
-        {
-            if (mdfr_thread)
-            {
-                mdfr_thread->join();
-                mdfr_thread->detach();
-            }
-        }
+
         // Create thread when entering combat
         void JustEnteredCombat(Unit* who) override
         {
-            if (!mdfr_thread)
-                mdfr_thread = new std::thread(HOD_DMGMOD_THR, &damage_modifier, 400, 1.8);
         }
 
         // Blazing Decomposition periodic dot
