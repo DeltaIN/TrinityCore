@@ -249,7 +249,7 @@ class item_battlelord_legs : public AuraScript
 
     void Register() override
     {
-        OnEffectProc += AuraEffectProcFn(HandleDummy, EFFECT_0, SPELL_AURA_PROC_TRIGGER_DAMAGE);
+        OnEffectProc += AuraEffectProcFn(item_battlelord_legs::HandleDummy, EFFECT_0, SPELL_AURA_PROC_TRIGGER_DAMAGE);
     }
 };
 
